@@ -1,6 +1,7 @@
 import Image from "next/image";
 import AuthImg from "@/public/Abstract Curves and Colors.jpeg";
 import { Logo } from "@/components/Logo";
+import AuthForm from "@/components/authentication/AuthForm";
 
 const AuthenticationPage = () => {
   return (
@@ -29,7 +30,12 @@ const AuthenticationPage = () => {
           </blockquote>
         </div>
       </div>
-      <div>Login Form</div>
+
+      <div className="relative flex flex-col items-center justify-center p-8 h-full  w-full">
+        <div className="max-w-xl w-[350px] mx-auto">
+          <AuthForm />
+        </div>
+      </div>
     </main>
   );
 };
