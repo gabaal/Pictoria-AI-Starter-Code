@@ -32,6 +32,10 @@ import {
 } from "@/components/ui/tooltip";
 import { InfoIcon } from "lucide-react";
 
+import { useEffect } from "react";
+
+import useGeneratedStore from "@/store/useGeneratedStore";
+
 export const ImageGenerationFormSchema = z.object({
   model: z.string({
     required_error: "Model is required",
@@ -65,6 +69,8 @@ export const ImageGenerationFormSchema = z.object({
 });
 
 const Configurations = () => {
+  const generateImage = useGeneratedStore((state) => state.generateImage);
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof ImageGenerationFormSchema>>({
     resolver: zodResolver(ImageGenerationFormSchema),
@@ -80,11 +86,28 @@ const Configurations = () => {
     },
   });
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "model") {
+        let newSteps;
+        if (value.model === "black-forest-labs/flux-schnell") {
+          newSteps = 4;
+        } else {
+          newSteps = 28;
+        }
+        if (newSteps !== undefined) {
+          form.setValue("num_inference_steps", newSteps);
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof ImageGenerationFormSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values);
+    await generateImage(values);
   }
 
   return (
@@ -271,7 +294,12 @@ const Configurations = () => {
                     <Slider
                       defaultValue={[field.value]}
                       min={1}
-                      max={50}
+                      max={
+                        form.getValues("model") ===
+                        "black-forest-labs/flux-schnell"
+                          ? 4
+                          : 50
+                      }
                       step={1}
                       onValueChange={(value) => field.onChange(value[0])}
                     />
